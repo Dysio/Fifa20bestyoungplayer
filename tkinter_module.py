@@ -33,6 +33,30 @@ def search_position():
 
     return print_results(result)
 
+def position_check():
+    positions_label = tk.Label(main_window)
+    positions_label.destroy()
+    pos_text = ""
+    sql_cmd = ""
+    num_of_checks = 0
+    for key, item in check_buttons.items():
+        if item["var"].get() != 0:
+            pos_text += key + "+"
+            num_of_checks += 1
+            if num_of_checks < 2:
+                sql_cmd += f"SELECT * FROM young_players_fifa20 WHERE POSITION LIKE {item['search']}"
+            else:
+                sql_cmd += f" OR POSITION LIKE {item['search']}"
+    print(sql_cmd)
+
+    positions_label = tk.Label(main_window, text = pos_text)
+    positions_label.grid(row=2, column=1)
+
+    result = cursor.execute(sql_cmd)
+    result = cursor.fetchall()
+
+    return print_results(result)
+
 
 db = sqlite3.connect('fifa20youngplayers.db')
 cursor = db.cursor()
@@ -50,10 +74,10 @@ position_choose_drop = tk.OptionMenu(main_window, clicked, *positions_options)
 position_choose_drop.grid(row=0, column=0, padx= 10, pady=10)
 
 check_buttons = {
-    "GK":{"box":"gk_check_box","var":"gk_check_var"},
-    "DEF":{"box":"defender_check_box","var":"defender_check_var"},
-    "MID":{"box":"midfielder_check_box","var":"midfielder_check_var"},
-    "F":{"box":"forward_check_box","var":"forward_check_var"}
+    "GK":{"box":"gk_check_box","var":"gk_check_var","search":"'%GK%'"},
+    "DEF":{"box":"defender_check_box","var":"defender_check_var","search":"'%B%'"},
+    "MID":{"box":"midfielder_check_box","var":"midfielder_check_var","search":"'%M%' OR POSITION LIKE '%W%'"},
+    "F":{"box":"forward_check_box","var":"forward_check_var","search":"'%F%' OR POSITION LIKE '%ST%'"}
 }
 
 col = 2
@@ -61,6 +85,7 @@ for key, item in check_buttons.items():
     print(f"{item['box']} -- {item['var']}")
     item["var"] = tk.IntVar()
     item["box"] = tk.Checkbutton(main_window, text=key, variable=item["var"])
+    print(f"item['var']= {item['var']}")
     item["box"].grid(row=0, column=col)
     col += 1
 
@@ -70,15 +95,7 @@ for key, item in check_buttons.items():
 # test_label = tk.Label(main_window, text=check_buttons["GK"]["var"].get())
 # test_label.grid(row=1, column=3)
 
-def position_check():
-    positions_label = tk.Label(main_window)
-    positions_label.destroy()
-    pos_text = ""
-    for key, item in check_buttons.items():
-        if item["var"].get() != 0:
-            pos_text += key + "+"
-    positions_label = tk.Label(main_window, text = pos_text)
-    positions_label.grid(row=2, column=1)
+
 
 position_check_button = tk.Button(main_window, text="Show choosen Positions", command=position_check)
 position_check_button.grid(row=1, column=1)
