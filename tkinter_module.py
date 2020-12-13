@@ -13,44 +13,54 @@ def print_results(result):
             row_result.grid(row=index+1, column=col)
             col += 1
 
-def search_position():
-    myLabel = tk.Label(main_window, text=clicked.get())
-    myLabel.grid(row=1,column=0)
-    # sql = "SELECT * FROM young_players_fifa20 WHERE POSITION LIKE %s"
-    if clicked.get() == positions_options[0]:
-        pos = "'GK'"
-    elif clicked.get() == positions_options[1]:
-        pos = "'%B%'"
-    elif clicked.get() == positions_options[2]:
-        pos = "'%M%'"
+def name_search():
+    name_to_search = name_box.get()
+    if name_to_search != "":
+        sql_cmd = f"NAME LIKE '%{name_to_search}%'"
     else:
-        pos = "'%F%'"
+        sql_cmd = ""
 
-    position = (pos,)
-    sql = f"SELECT * FROM young_players_fifa20 WHERE POSITION LIKE {pos}"
-    result = cursor.execute(sql)
-    result = cursor.fetchall()
+    # result = cursor.execute(sql_cmd)
+    # result = cursor.fetchall()
 
-    return print_results(result)
+    return sql_cmd
 
 def position_check():
-    positions_label = tk.Label(main_window)
-    positions_label.destroy()
-    pos_text = ""
     sql_cmd = ""
     num_of_checks = 0
     for key, item in check_buttons.items():
         if item["var"].get() != 0:
-            pos_text += key + "+"
             num_of_checks += 1
             if num_of_checks < 2:
-                sql_cmd += f"SELECT * FROM young_players_fifa20 WHERE POSITION LIKE {item['search']}"
+                sql_cmd += f"POSITION LIKE {item['search']}"
             else:
                 sql_cmd += f" OR POSITION LIKE {item['search']}"
     print(sql_cmd)
 
-    positions_label = tk.Label(main_window, text = pos_text)
-    positions_label.grid(row=2, column=1)
+    # result = cursor.execute(sql_cmd)
+    # result = cursor.fetchall()
+
+    return sql_cmd
+
+def order_by():
+    pass
+
+def search_func():
+    sql_cmd = "SELECT * FROM young_players_fifa20"
+    name_sql_cmd = name_search()
+    pos_sql_cmd = position_check()
+    print(f"name_sql_cmd: {name_sql_cmd}")
+    print(f"pos_sql_cmd: {pos_sql_cmd}")
+
+    if name_sql_cmd != "":
+        sql_cmd += f" WHERE {name_sql_cmd}"
+        if pos_sql_cmd != "":
+            sql_cmd += f" AND ({pos_sql_cmd})"
+    else:
+        if pos_sql_cmd != "":
+            sql_cmd += f" WHERE ({pos_sql_cmd})"
+
+    print(sql_cmd)
 
     result = cursor.execute(sql_cmd)
     result = cursor.fetchall()
@@ -61,17 +71,10 @@ def position_check():
 db = sqlite3.connect('fifa20youngplayers.db')
 cursor = db.cursor()
 
-positions_options = (
-    "GK",
-    "Defender",
-    "Midfielder",
-    "Forward"
-)
-
-clicked = tk.StringVar()
-clicked.set(positions_options[0])
-position_choose_drop = tk.OptionMenu(main_window, clicked, *positions_options)
-position_choose_drop.grid(row=0, column=0, padx= 10, pady=10)
+name_label = tk.Label(main_window, text="name:")
+name_label.grid(row=0, column=0, padx=10, pady=10)
+name_box = tk.Entry(main_window, font=("Helvetica", 15))
+name_box.grid(row=0, column=1)
 
 check_buttons = {
     "GK":{"box":"gk_check_box","var":"gk_check_var","search":"'%GK%'"},
@@ -89,26 +92,10 @@ for key, item in check_buttons.items():
     item["box"].grid(row=0, column=col)
     col += 1
 
-# gk_check_var = tk.IntVar()
-# gk_check_box = tk.Checkbutton(main_window, text="GK", variable=gk_check_var)
-# gk_check_box.grid(row=0, column=2)
-# test_label = tk.Label(main_window, text=check_buttons["GK"]["var"].get())
-# test_label.grid(row=1, column=3)
+# position_check_button = tk.Button(main_window, text="Search", command=position_check)
+position_check_button = tk.Button(main_window, text="Search", command=search_func)
+position_check_button.grid(row=0, column=col)
 
 
-
-position_check_button = tk.Button(main_window, text="Show choosen Positions", command=position_check)
-position_check_button.grid(row=1, column=1)
-
-search_button = tk.Button(main_window, text="Search...", command=search_position)
-search_button.grid(row=0, column=1)
-
-
-# for index, element in enumerate(result):
-#     col = 0
-#     for item in element:
-#         row_result = tk.Label(main_window, text=item)
-#         row_result.grid(row=index+1, column=col)
-#         col += 1
 
 main_window.mainloop()
