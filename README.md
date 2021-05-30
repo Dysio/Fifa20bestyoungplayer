@@ -6,6 +6,10 @@ Sorting options:
 - position - here you can chceck the positions of players that you look for. Choice can be multiple.
 - order by - you can choose by which parameter, age or value, players will be sorted. You also can choose if order will be ascending or descending.
 
+Screen
+
+![WindowView](/static/Window_View_01.png)
+
 #### Technologies used
  - Python
  - sqlite3
